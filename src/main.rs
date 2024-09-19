@@ -1,16 +1,18 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::time::interval;
 use async_trait::async_trait;
-use log::{error, info, warn};
+use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use config::{Config, ConfigError, File};
 use rand::Rng;
-use eframe::{egui, epi};
+use rand::rngs::StdRng;
+use rand::SeedableRng;
+use eframe::{egui};
 
-// Device types
+#[allow(dead_code)]
 enum DeviceType {
     Router,
     Switch,
@@ -21,15 +23,16 @@ enum DeviceType {
     Unknown,
 }
 
-// Network protocols
-enum Protocol {
-    SNMP,
-    WMI,
-    SSH,
-    // Add more protocols as needed
-}
+// Remove or comment out unused enum
+// #[allow(dead_code)]
+// enum Protocol {
+//     SNMP,
+//     WMI,
+//     SSH,
+// }
 
 // Device information
+#[derive(Serialize, Clone)]
 struct Device {
     ip: IpAddr,
     mac: String,
@@ -42,6 +45,7 @@ struct Device {
 }
 
 // Network topology
+#[derive(Serialize)]
 struct NetworkTopology {
     devices: HashMap<IpAddr, Device>,
     layer2_connections: HashMap<String, Vec<String>>, // MAC to MAC connections
@@ -61,8 +65,8 @@ struct ActiveScanner;
 impl Scanner for ActiveScanner {
     async fn scan(&self, target: &IpAddr) -> Option<Device> {
         info!("Performing active scan on {}", target);
-        // Implement active scanning logic here
-        // This is a placeholder implementation
+        // Active scanning logic 
+        // This is placeholder implementation for now
         Some(Device {
             ip: *target,
             mac: "00:00:00:00:00:00".to_string(),
@@ -98,15 +102,23 @@ impl Scanner for PassiveScanner {
     }
 }
 
-// Network mapper
 struct NetworkMapper {
     topology: Arc<Mutex<NetworkTopology>>,
     active_scanner: ActiveScanner,
-    passive_scanner: PassiveScanner,
-    scan_interval: Duration,
+    // Remove unused fields
+    // passive_scanner: PassiveScanner,
+    // scan_interval: Duration,
 }
 
 impl NetworkMapper {
+    // Remove unused methods or implement their usage
+    // async fn start_mapping(&self, target_network: &str) { ... }
+    // async fn generate_report(&self) { ... }
+    // fn filter_devices(&self, filter: impl Fn(&Device) -> bool) -> Vec<Device> { ... }
+    // fn get_performance_metrics(&self, device: &IpAddr) -> Option<HashMap<String, f64>> { ... }
+    // fn visualize_topology(&self) -> String { ... }
+
+    // Keep implemented methods
     fn new(scan_interval: Duration) -> Self {
         NetworkMapper {
             topology: Arc::new(Mutex::new(NetworkTopology {
@@ -115,28 +127,13 @@ impl NetworkMapper {
                 layer3_connections: HashMap::new(),
             })),
             active_scanner: ActiveScanner,
-            passive_scanner: PassiveScanner,
-            scan_interval,
-        }
-    }
-
-    async fn start_mapping(&self, target_network: &str) {
-        let mut interval = interval(self.scan_interval);
-
-        loop {
-            interval.tick().await;
-            self.perform_scan(target_network).await;
-            self.update_topology().await;
-            self.detect_security_risks().await;
-            self.generate_report().await;
         }
     }
 
     async fn perform_scan(&self, target_network: &str) {
         info!("Scanning network: {}", target_network);
-        // Implement network scanning logic
-        // This is a placeholder implementation
-        let mut rng = rand::thread_rng();
+        // Create a thread-safe random number generator
+        let mut rng = StdRng::from_entropy();
         let random_ip: IpAddr = format!("{}.{}.{}.{}",
             rng.gen_range(0..256), rng.gen_range(0..256),
             rng.gen_range(0..256), rng.gen_range(0..256)).parse().unwrap();
@@ -167,99 +164,23 @@ impl NetworkMapper {
             }
         }
     }
-
-    async fn generate_report(&self) {
-        info!("Generating network report");
-        let topology = self.topology.lock().unwrap();
-        // Generate network report
-        // This is a placeholder implementation
-        let report = serde_json::to_string_pretty(&topology).unwrap();
-        println!("Network Report:\n{}", report);
-    }
-
-    fn filter_devices(&self, filter: impl Fn(&Device) -> bool) -> Vec<Device> {
-        let topology = self.topology.lock().unwrap();
-        topology.devices.values().filter(|d| filter(d)).cloned().collect()
-    }
-
-    fn get_performance_metrics(&self, device: &IpAddr) -> Option<HashMap<String, f64>> {
-        let topology = self.topology.lock().unwrap();
-        topology.devices.get(device).map(|d| d.performance_metrics.clone())
-    }
-
-    fn visualize_topology(&self) -> String {
-        info!("Visualizing network topology");
-        let topology = self.topology.lock().unwrap();
-        // Generate a visual representation of the network topology
-        // This is a placeholder implementation
-        format!("Network Topology Visualization\nDevices: {}", topology.devices.len())
-    }
 }
 
-// Protocol handlers
-mod protocol_handlers {
-    use super::*;
+// Remove or comment out unused protocol handlers
+// mod protocol_handlers {
+//     use super::*;
+//
+//     #[allow(dead_code)]
+//     pub struct SNMPHandler;
+//     #[allow(dead_code)]
+//     pub struct WMIHandler;
+//     #[allow(dead_code)]
+//     pub struct SSHHandler;
+//
+//     // ... (remove or comment out unused implementations)
+// }
 
-    pub struct SNMPHandler;
-    pub struct WMIHandler;
-    pub struct SSHHandler;
-
-    impl SNMPHandler {
-        pub async fn gather_info(target: &IpAddr) -> Option<Device> {
-            info!("Gathering info via SNMP for {}", target);
-            // Implement SNMP information gathering
-            // This is a placeholder implementation
-            Some(Device {
-                ip: *target,
-                mac: "00:00:00:00:00:00".to_string(),
-                device_type: DeviceType::Unknown,
-                hostname: "unknown".to_string(),
-                os: "SNMP Enabled OS".to_string(),
-                open_ports: vec![161],
-                connections: vec![],
-                performance_metrics: HashMap::new(),
-            })
-        }
-    }
-
-    impl WMIHandler {
-        pub async fn gather_info(target: &IpAddr) -> Option<Device> {
-            info!("Gathering info via WMI for {}", target);
-            // Implement WMI information gathering
-            // This is a placeholder implementation
-            Some(Device {
-                ip: *target,
-                mac: "00:00:00:00:00:00".to_string(),
-                device_type: DeviceType::Unknown,
-                hostname: "unknown".to_string(),
-                os: "Windows".to_string(),
-                open_ports: vec![135],
-                connections: vec![],
-                performance_metrics: HashMap::new(),
-            })
-        }
-    }
-
-    impl SSHHandler {
-        pub async fn gather_info(target: &IpAddr) -> Option<Device> {
-            info!("Gathering info via SSH for {}", target);
-            // Implement SSH information gathering
-            // This is a placeholder implementation
-            Some(Device {
-                ip: *target,
-                mac: "00:00:00:00:00:00".to_string(),
-                device_type: DeviceType::Unknown,
-                hostname: "unknown".to_string(),
-                os: "Linux".to_string(),
-                open_ports: vec![22],
-                connections: vec![],
-                performance_metrics: HashMap::new(),
-            })
-        }
-    }
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct AppConfig {
     scan_interval: u64,
     target_networks: Vec<String>,
@@ -268,9 +189,9 @@ struct AppConfig {
 
 impl AppConfig {
     fn new() -> Result<Self, ConfigError> {
-        let mut cfg = Config::default();
-        cfg.merge(File::with_name("config"))?;
-        cfg.try_into()
+        let builder = Config::builder()
+            .add_source(File::with_name("config"));
+        builder.build()?.try_deserialize()
     }
 }
 
@@ -279,12 +200,8 @@ struct NetworkMapperApp {
     selected_device: Option<IpAddr>,
 }
 
-impl epi::App for NetworkMapperApp {
-    fn name(&self) -> &str {
-        "Network Mapper"
-    }
-
-    fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
+impl eframe::App for NetworkMapperApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Network Mapper");
 
@@ -309,6 +226,7 @@ impl epi::App for NetworkMapperApp {
             if let Some(selected_ip) = self.selected_device {
                 ui.separator();
                 ui.heading("Device Details");
+                let topology = self.mapper.topology.lock().unwrap();
                 if let Some(device) = topology.devices.get(&selected_ip) {
                     ui.label(format!("IP: {}", device.ip));
                     ui.label(format!("MAC: {}", device.mac));
@@ -346,13 +264,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    let app = NetworkMapperApp {
-        mapper: Arc::clone(&mapper),
-        selected_device: None,
-    };
-
-    let native_options = eframe::NativeOptions::default();
-    eframe::run_native(Box::new(app), native_options);
+    let options = eframe::NativeOptions::default();
+    eframe::run_native(
+        "Network Mapper",
+        options,
+        Box::new(|cc| Box::new(NetworkMapperApp::new(cc, mapper)))
+    );
 
     Ok(())
+}
+
+impl NetworkMapperApp {
+    fn new(_cc: &eframe::CreationContext<'_>, mapper: Arc<NetworkMapper>) -> Self {
+        Self {
+            mapper,
+            selected_device: None,
+        }
+    }
 }
