@@ -289,6 +289,7 @@ mod tests {
                             );
                         }
                     }
+                    Ok(())
                 });
             }
 
@@ -356,6 +357,7 @@ mod tests {
                         max,
                         max_connections
                     );
+                    Ok(())
                 });
             }
 
@@ -417,6 +419,7 @@ mod tests {
                             configured_rate
                         );
                     }
+                    Ok(())
                 });
             }
         }

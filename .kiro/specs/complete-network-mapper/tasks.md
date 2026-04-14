@@ -24,7 +24,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - **Property 4: Rate Limiting Enforcement**
     - **Validates: Requirements 1.11, 10.1, 10.2, 10.3, 10.4**
 
-  - [ ] 2.3 Add connection limiting with semaphore
+  - [x] 2.3 Add connection limiting with semaphore
     - Implement Semaphore-based concurrent connection limiting
     - Add acquire_connection_permit() method returning ConnectionPermit guard
     - _Requirements: 10.2, 10.4_
