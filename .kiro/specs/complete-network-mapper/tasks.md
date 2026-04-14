@@ -6,7 +6,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
 
 ## Tasks
 
-- [ ] 1. Set up core data structures and shared data store
+- [x] 1. Set up core data structures and shared data store
   - Create core data models (Device, NetworkInterface, MacAddr, Route, ArpEntry, Vlan, SwitchPort)
   - Implement SharedDataStore with thread-safe access using Arc<RwLock<>>
   - Add error types (ScanError, ProtocolError, MetricsError, ReportError)
@@ -14,13 +14,13 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
   - _Requirements: All requirements depend on these foundational structures_
 
 - [ ] 2. Implement Rate Limiter component
-  - [ ] 2.1 Create RateLimiter with token bucket algorithm for packet rate limiting
+  - [x] 2.1 Create RateLimiter with token bucket algorithm for packet rate limiting
     - Implement TokenBucket struct with configurable packets per second
     - Add per-scan-type rate limits (ARP, ICMP, TCP, UDP)
     - Implement acquire_packet_permit() method with async waiting
     - _Requirements: 1.11, 10.1, 10.2, 10.3, 10.5_
 
-  - [ ]* 2.2 Write property test for rate limiting enforcement
+  - [-] 2.2 Write property test for rate limiting enforcement
     - **Property 4: Rate Limiting Enforcement**
     - **Validates: Requirements 1.11, 10.1, 10.2, 10.3, 10.4**
 
@@ -35,7 +35,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Add random delays between probes
     - _Requirements: 10.6, 10.7_
 
-  - [ ]* 2.5 Write property test for stealth mode behavior
+  - [ ] 2.5 Write property test for stealth mode behavior
     - **Property 67: Stealth Mode Rate Reduction**
     - **Property 68: Stealth Mode Randomization**
     - **Validates: Requirements 10.6, 10.7**
@@ -45,7 +45,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Implement IP blacklist prevention with logging
     - _Requirements: 10.8, 10.9, 10.10_
 
-  - [ ]* 2.7 Write property tests for whitelist/blacklist
+  - [ ] 2.7 Write property tests for whitelist/blacklist
     - **Property 69: Whitelist Exclusion**
     - **Property 70: Blacklist Prevention**
     - **Validates: Requirements 10.8, 10.9, 10.10**
@@ -64,7 +64,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Integrate with RateLimiter for packet rate control
     - _Requirements: 1.1, 1.2_
 
-  - [ ]* 3.3 Write property test for scanner coverage completeness
+  - [ ] 3.3 Write property test for scanner coverage completeness
     - **Property 1: Scanner Coverage Completeness**
     - **Validates: Requirements 1.1, 1.3, 1.6, 1.9**
 
@@ -82,7 +82,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Integrate with RateLimiter
     - _Requirements: 1.6, 1.7, 1.8_
 
-  - [ ]* 3.6 Write property test for scan operation timeout compliance
+  - [ ] 3.6 Write property test for scan operation timeout compliance
     - **Property 5: Scan Operation Timeout Compliance**
     - **Validates: Requirements 1.7, 3.12**
 
@@ -93,11 +93,11 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Integrate with RateLimiter
     - _Requirements: 1.9, 1.10_
 
-  - [ ]* 3.8 Write property test for scan response recording
+  - [ ] 3.8 Write property test for scan response recording
     - **Property 2: Scan Response Recording**
     - **Validates: Requirements 1.2, 1.4, 1.5, 1.8, 1.10**
 
-  - [ ]* 3.9 Write property test for scan result completeness
+  - [ ] 3.9 Write property test for scan result completeness
     - **Property 3: Scan Result Completeness**
     - **Validates: Requirements 1.12**
 
@@ -116,11 +116,11 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Parse banners to extract OS and version information
     - _Requirements: 2.2, 2.3, 2.4, 2.6_
 
-  - [ ]* 5.2 Write property test for fingerprinting trigger completeness
+  - [ ] 5.2 Write property test for fingerprinting trigger completeness
     - **Property 6: Fingerprinting Trigger Completeness**
     - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5**
 
-  - [ ]* 5.3 Write property test for banner parsing extraction
+  - [ ] 5.3 Write property test for banner parsing extraction
     - **Property 7: Banner Parsing Extraction**
     - **Validates: Requirements 2.6**
 
@@ -132,7 +132,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Printer detection: ports 515, 631, 9100
     - _Requirements: 2.7, 2.8, 2.9, 2.10, 2.11_
 
-  - [ ]* 5.5 Write property test for device classification rules
+  - [ ] 5.5 Write property test for device classification rules
     - **Property 8: Device Classification Rules**
     - **Validates: Requirements 2.7, 2.8, 2.9, 2.10, 2.11**
 
@@ -141,7 +141,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Assign higher confidence for unique patterns
     - _Requirements: 2.12_
 
-  - [ ]* 5.7 Write property test for classification confidence scoring
+  - [ ] 5.7 Write property test for classification confidence scoring
     - **Property 9: Classification Confidence Scoring**
     - **Validates: Requirements 2.12**
 
@@ -170,15 +170,15 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Parse interface information (speed, status, MAC addresses)
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ]* 6.3 Write property test for protocol handler conditional execution
+  - [ ] 6.3 Write property test for protocol handler conditional execution
     - **Property 10: Protocol Handler Conditional Execution**
     - **Validates: Requirements 3.1, 3.5, 3.8**
 
-  - [ ]* 6.4 Write property test for SNMP query completeness
+  - [ ] 6.4 Write property test for SNMP query completeness
     - **Property 11: SNMP Query Completeness**
     - **Validates: Requirements 3.2, 3.4**
 
-  - [ ]* 6.5 Write property test for SNMP community string fallback
+  - [ ] 6.5 Write property test for SNMP community string fallback
     - **Property 12: SNMP Community String Fallback**
     - **Validates: Requirements 3.3**
 
@@ -189,7 +189,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Extract hostname, OS version, domain membership, network interfaces
     - _Requirements: 3.5, 3.6, 3.7_
 
-  - [ ]* 6.7 Write property test for WMI query completeness
+  - [ ] 6.7 Write property test for WMI query completeness
     - **Property 13: WMI Query Completeness**
     - **Validates: Requirements 3.6, 3.7**
 
@@ -200,7 +200,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Handle command not found errors with fallback commands
     - _Requirements: 3.8, 3.9, 3.10_
 
-  - [ ]* 6.9 Write property test for SSH command execution completeness
+  - [ ] 6.9 Write property test for SSH command execution completeness
     - **Property 14: SSH Command Execution Completeness**
     - **Validates: Requirements 3.9, 3.10**
 
@@ -210,7 +210,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Mark protocol as unavailable for the device
     - _Requirements: 3.11_
 
-  - [ ]* 6.11 Write property test for protocol handler error resilience
+  - [ ] 6.11 Write property test for protocol handler error resilience
     - **Property 15: Protocol Handler Error Resilience**
     - **Validates: Requirements 3.11**
 
@@ -235,7 +235,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Create direct connections from CDP/LLDP neighbor data
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ]* 8.3 Write property test for topology entry creation from interface data
+  - [ ] 8.3 Write property test for topology entry creation from interface data
     - **Property 16: Topology Entry Creation from Interface Data**
     - **Validates: Requirements 4.1, 4.2, 4.3**
 
@@ -245,11 +245,11 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Infer hop-by-hop paths from traceroute data
     - _Requirements: 4.4, 4.5, 4.6, 4.7_
 
-  - [ ]* 8.5 Write property test for multi-interface routing topology
+  - [ ] 8.5 Write property test for multi-interface routing topology
     - **Property 17: Multi-Interface Routing Topology**
     - **Validates: Requirements 4.4**
 
-  - [ ]* 8.6 Write property test for routing data topology construction
+  - [ ] 8.6 Write property test for routing data topology construction
     - **Property 18: Routing Data Topology Construction**
     - **Validates: Requirements 4.5, 4.6, 4.7**
 
@@ -260,7 +260,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Store VLAN information in topology
     - _Requirements: 4.9_
 
-  - [ ]* 8.8 Write property test for VLAN identification and grouping
+  - [ ] 8.8 Write property test for VLAN identification and grouping
     - **Property 20: VLAN Identification and Grouping**
     - **Validates: Requirements 4.9**
 
@@ -269,7 +269,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Detect loops without spanning tree protocol
     - _Requirements: 4.8_
 
-  - [ ]* 8.10 Write property test for Layer 2 loop detection
+  - [ ] 8.10 Write property test for Layer 2 loop detection
     - **Property 19: Layer 2 Loop Detection**
     - **Validates: Requirements 4.8**
 
@@ -278,7 +278,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Use gateway configurations to infer routing
     - _Requirements: 4.10_
 
-  - [ ]* 8.12 Write property test for topology inference from incomplete data
+  - [ ] 8.12 Write property test for topology inference from incomplete data
     - **Property 21: Topology Inference from Incomplete Data**
     - **Validates: Requirements 4.10**
 
@@ -287,11 +287,11 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Maintain current and historical topology states
     - _Requirements: 4.11, 4.12_
 
-  - [ ]* 8.14 Write property test for incremental topology updates
+  - [ ] 8.14 Write property test for incremental topology updates
     - **Property 22: Incremental Topology Updates**
     - **Validates: Requirements 4.11**
 
-  - [ ]* 8.15 Write property test for topology state history maintenance
+  - [ ] 8.15 Write property test for topology state history maintenance
     - **Property 23: Topology State History Maintenance**
     - **Validates: Requirements 4.12**
 
@@ -324,7 +324,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Parse netstat -i/ip -s link for interface statistics
     - _Requirements: 5.7, 5.8_
 
-  - [ ]* 9.5 Write property test for conditional metrics collection
+  - [ ] 9.5 Write property test for conditional metrics collection
     - **Property 24: Conditional Metrics Collection**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8**
 
@@ -334,7 +334,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Store both raw and delta values
     - _Requirements: 5.9_
 
-  - [ ]* 9.7 Write property test for counter-based metrics delta calculation
+  - [ ] 9.7 Write property test for counter-based metrics delta calculation
     - **Property 25: Counter-Based Metrics Delta Calculation**
     - **Validates: Requirements 5.9**
 
@@ -343,7 +343,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Implement time-range queries
     - _Requirements: 5.10_
 
-  - [ ]* 9.9 Write property test for metric storage completeness
+  - [ ] 9.9 Write property test for metric storage completeness
     - **Property 26: Metric Storage Completeness**
     - **Validates: Requirements 5.10**
 
@@ -352,7 +352,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Run pruning periodically (every hour)
     - _Requirements: 5.11_
 
-  - [ ]* 9.11 Write property test for metrics retention policy enforcement
+  - [ ] 9.11 Write property test for metrics retention policy enforcement
     - **Property 27: Metrics Retention Policy Enforcement**
     - **Validates: Requirements 5.11**
 
@@ -361,7 +361,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Continue with other devices on error
     - _Requirements: 5.12_
 
-  - [ ]* 9.13 Write property test for metrics collection error resilience
+  - [ ] 9.13 Write property test for metrics collection error resilience
     - **Property 28: Metrics Collection Error Resilience**
     - **Validates: Requirements 5.12**
 
@@ -386,7 +386,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Detect RDP (port 3389) exposure to non-management networks
     - _Requirements: 6.1, 6.2, 6.5_
 
-  - [ ]* 11.3 Write property test for port-based risk detection
+  - [ ] 11.3 Write property test for port-based risk detection
     - **Property 29: Port-Based Risk Detection**
     - **Validates: Requirements 6.1, 6.2, 6.5**
 
@@ -395,7 +395,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Detect SSH password authentication enabled
     - _Requirements: 6.3, 6.4_
 
-  - [ ]* 11.5 Write property test for configuration-based risk detection
+  - [ ] 11.5 Write property test for configuration-based risk detection
     - **Property 30: Configuration-Based Risk Detection**
     - **Validates: Requirements 6.3, 6.4**
 
@@ -403,7 +403,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Detect excessive open ports (>20 TCP ports)
     - _Requirements: 6.6_
 
-  - [ ]* 11.7 Write property test for threshold-based risk detection
+  - [ ] 11.7 Write property test for threshold-based risk detection
     - **Property 31: Threshold-Based Risk Detection**
     - **Validates: Requirements 6.6**
 
@@ -413,7 +413,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Track first_seen and last_seen timestamps
     - _Requirements: 6.7_
 
-  - [ ]* 11.9 Write property test for temporal risk detection
+  - [ ] 11.9 Write property test for temporal risk detection
     - **Property 32: Temporal Risk Detection**
     - **Validates: Requirements 6.7**
 
@@ -422,7 +422,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Detect MAC address appearing with different IP (MAC Spoofing)
     - _Requirements: 6.8_
 
-  - [ ]* 11.11 Write property test for MAC-IP relationship risk detection
+  - [ ] 11.11 Write property test for MAC-IP relationship risk detection
     - **Property 33: MAC-IP Relationship Risk Detection**
     - **Validates: Requirements 6.8**
 
@@ -431,7 +431,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Flag outdated OS versions based on known EOL dates
     - _Requirements: 6.9_
 
-  - [ ]* 11.13 Write property test for OS version risk detection
+  - [ ] 11.13 Write property test for OS version risk detection
     - **Property 34: OS Version Risk Detection**
     - **Validates: Requirements 6.9**
 
@@ -440,324 +440,324 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Use topology loop detection results
     - _Requirements: 6.10_
 
-  - [ ]* 11.15 Write property test for topology-based risk detection
+  - [ ] 11.15 Write property test for topology-based risk detection
     - **Property 35: Topology-Based Risk Detection**
     - **Validates: Requirements 6.10**
 
-  - [ ] 11.16 Implement scan pattern risk detection
+  - [~] 11.16 Implement scan pattern risk detection
     - Detect stealth devices (ICMP responsive but blocks TCP/UDP)
     - _Requirements: 6.11_
 
-  - [ ]* 11.17 Write property test for scan pattern risk detection
+  - [~] 11.17 Write property test for scan pattern risk detection
     - **Property 36: Scan Pattern Risk Detection**
     - **Validates: Requirements 6.11**
 
-  - [ ] 11.18 Implement risk severity assignment
+  - [~] 11.18 Implement risk severity assignment
     - Assign severity levels: Critical, High, Medium, Low
     - Use severity matrix based on risk type
     - _Requirements: 6.12_
 
-  - [ ]* 11.19 Write property test for risk severity assignment
+  - [~] 11.19 Write property test for risk severity assignment
     - **Property 37: Risk Severity Assignment**
     - **Validates: Requirements 6.12**
 
-  - [ ] 11.20 Integrate RiskDetector with SharedDataStore
+  - [~] 11.20 Integrate RiskDetector with SharedDataStore
     - Store detected risks in SharedDataStore
     - Provide query interface for reports and visualization
     - _Requirements: 6.1-6.12_
 
 - [ ] 12. Implement Report Generator
-  - [ ] 12.1 Create ReportGenerator with report structures
+  - [~] 12.1 Create ReportGenerator with report structures
     - Create Report with inventory, topology summary, security findings, performance summary
     - Create DeviceInventoryEntry, TopologySummary, PerformanceSummary
     - Support ReportFormat: JSON, CSV, HTML
     - _Requirements: 7.1-7.12_
 
-  - [ ] 12.2 Implement device inventory generation
+  - [~] 12.2 Implement device inventory generation
     - Extract all devices from SharedDataStore
     - Include IP, MAC, hostname, device type, OS, open ports
     - _Requirements: 7.1, 7.2_
 
-  - [ ]* 12.3 Write property test for device inventory entry completeness
+  - [~] 12.3 Write property test for device inventory entry completeness
     - **Property 39: Device Inventory Entry Completeness**
     - **Validates: Requirements 7.2**
 
 
-  - [ ] 12.4 Implement topology summary generation
+  - [~] 12.4 Implement topology summary generation
     - Calculate subnet counts from topology
     - Generate device type distribution statistics
     - Calculate connection statistics
     - _Requirements: 7.3, 7.4_
 
-  - [ ]* 12.5 Write property test for topology summary content completeness
+  - [~] 12.5 Write property test for topology summary content completeness
     - **Property 40: Topology Summary Content Completeness**
     - **Validates: Requirements 7.4**
 
-  - [ ] 12.6 Implement security findings report
+  - [~] 12.6 Implement security findings report
     - Extract all risks from SharedDataStore
     - Group risks by severity level
     - Include affected device details for each risk
     - _Requirements: 7.5, 7.6_
 
-  - [ ]* 12.7 Write property test for security findings organization
+  - [~] 12.7 Write property test for security findings organization
     - **Property 41: Security Findings Organization**
     - **Validates: Requirements 7.6**
 
-  - [ ] 12.8 Implement performance summary generation
+  - [~] 12.8 Implement performance summary generation
     - Calculate average CPU, memory, bandwidth per device type
     - Query metrics from MetricsStore
     - _Requirements: 7.7, 7.8_
 
-  - [ ]* 12.9 Write property test for performance summary content completeness
+  - [~] 12.9 Write property test for performance summary content completeness
     - **Property 42: Performance Summary Content Completeness**
     - **Validates: Requirements 7.8**
 
-  - [ ] 12.10 Implement JSON report format
+  - [~] 12.10 Implement JSON report format
     - Serialize Report structure to JSON
     - Use serde_json for serialization
     - _Requirements: 7.9_
 
-  - [ ] 12.11 Implement CSV report format
+  - [~] 12.11 Implement CSV report format
     - Generate CSV for device inventory
     - Generate separate CSVs for security findings and metrics
     - _Requirements: 7.9_
 
-  - [ ] 12.12 Implement HTML report format with embedded visualization
+  - [~] 12.12 Implement HTML report format with embedded visualization
     - Generate HTML with CSS styling
     - Embed topology visualization as SVG or canvas
     - Include all report sections
     - _Requirements: 7.9, 7.10_
 
-  - [ ]* 12.13 Write property test for report format support
+  - [~] 12.13 Write property test for report format support
     - **Property 43: Report Format Support**
     - **Validates: Requirements 7.9**
 
-  - [ ]* 12.14 Write property test for HTML report visualization embedding
+  - [~] 12.14 Write property test for HTML report visualization embedding
     - **Property 44: HTML Report Visualization Embedding**
     - **Validates: Requirements 7.10**
 
-  - [ ] 12.15 Implement report metadata
+  - [~] 12.15 Implement report metadata
     - Add generation timestamp
     - Calculate scan coverage percentage
     - _Requirements: 7.12_
 
-  - [ ]* 12.16 Write property test for report metadata completeness
+  - [~] 12.16 Write property test for report metadata completeness
     - **Property 46: Report Metadata Completeness**
     - **Validates: Requirements 7.12**
 
-  - [ ] 12.17 Optimize report generation performance
+  - [~] 12.17 Optimize report generation performance
     - Ensure <5 second generation for 1000 devices
     - Use parallel processing where applicable
     - _Requirements: 7.11_
 
-  - [ ]* 12.18 Write property test for report generation performance
+  - [~] 12.18 Write property test for report generation performance
     - **Property 45: Report Generation Performance**
     - **Validates: Requirements 7.11**
 
-  - [ ]* 12.19 Write property test for report structure completeness
+  - [~] 12.19 Write property test for report structure completeness
     - **Property 38: Report Structure Completeness**
     - **Validates: Requirements 7.1, 7.3, 7.5, 7.7**
 
-- [ ] 13. Checkpoint - Verify risk detection and reporting functionality
+- [~] 13. Checkpoint - Verify risk detection and reporting functionality
   - Ensure all risk detection and report generation tests pass, ask the user if questions arise.
 
 
 - [ ] 14. Implement Topology Visualizer GUI component
-  - [ ] 14.1 Create TopologyVisualizer with egui rendering
+  - [~] 14.1 Create TopologyVisualizer with egui rendering
     - Create TopologyVisualizer struct with layout engine
     - Add node_positions, selected_node, zoom_level, pan_offset
     - Implement render() method for egui
     - _Requirements: 8.1-8.12_
 
-  - [ ] 14.2 Implement device node rendering
+  - [~] 14.2 Implement device node rendering
     - Render each device as a node in the GUI
     - Use different colors for different device types
     - Display IP address and hostname as labels
     - _Requirements: 8.1, 8.2, 8.3_
 
-  - [ ]* 14.3 Write property test for device node rendering
+  - [~] 14.3 Write property test for device node rendering
     - **Property 47: Device Node Rendering**
     - **Validates: Requirements 8.1**
 
-  - [ ]* 14.4 Write property test for device type visual differentiation
+  - [~] 14.4 Write property test for device type visual differentiation
     - **Property 48: Device Type Visual Differentiation**
     - **Validates: Requirements 8.2**
 
-  - [ ]* 14.5 Write property test for node label completeness
+  - [~] 14.5 Write property test for node label completeness
     - **Property 49: Node Label Completeness**
     - **Validates: Requirements 8.3**
 
-  - [ ] 14.6 Implement connection line rendering
+  - [~] 14.6 Implement connection line rendering
     - Render Layer 2 connections as solid lines
     - Render Layer 3 connections as dashed lines
     - _Requirements: 8.4, 8.5_
 
-  - [ ]* 14.7 Write property test for connection rendering differentiation
+  - [~] 14.7 Write property test for connection rendering differentiation
     - **Property 50: Connection Rendering Differentiation**
     - **Validates: Requirements 8.4, 8.5**
 
-  - [ ] 14.8 Implement risk visualization
+  - [~] 14.8 Implement risk visualization
     - Display warning icon on nodes with security risks
     - Use color coding for risk severity
     - _Requirements: 8.6_
 
-  - [ ]* 14.9 Write property test for risk visualization
+  - [~] 14.9 Write property test for risk visualization
     - **Property 51: Risk Visualization**
     - **Validates: Requirements 8.6**
 
-  - [ ] 14.10 Implement node interaction and detail panel
+  - [~] 14.10 Implement node interaction and detail panel
     - Handle node click events
     - Display device details in side panel
     - Show IP, MAC, hostname, OS, ports, metrics
     - _Requirements: 8.7_
 
-  - [ ]* 14.11 Write property test for node interaction detail display
+  - [~] 14.11 Write property test for node interaction detail display
     - **Property 52: Node Interaction Detail Display**
     - **Validates: Requirements 8.7**
 
-  - [ ] 14.12 Implement connection interaction
+  - [~] 14.12 Implement connection interaction
     - Handle connection line click events
     - Display connection details (bandwidth, latency, packet loss)
     - _Requirements: 8.8_
 
-  - [ ]* 14.13 Write property test for connection interaction detail display
+  - [~] 14.13 Write property test for connection interaction detail display
     - **Property 53: Connection Interaction Detail Display**
     - **Validates: Requirements 8.8**
 
-  - [ ] 14.14 Implement zoom and pan controls
+  - [~] 14.14 Implement zoom and pan controls
     - Add mouse wheel zoom support
     - Add click-and-drag pan support
     - Maintain zoom level and pan offset state
     - _Requirements: 8.9_
 
-  - [ ]* 14.15 Write property test for visualization navigation support
+  - [~] 14.15 Write property test for visualization navigation support
     - **Property 54: Visualization Navigation Support**
     - **Validates: Requirements 8.9**
 
-  - [ ] 14.16 Implement force-directed layout algorithm
+  - [~] 14.16 Implement force-directed layout algorithm
     - Use spring-based force simulation
     - Position nodes automatically based on connections
     - Run layout algorithm iteratively until stable
     - _Requirements: 8.10_
 
-  - [ ]* 14.17 Write property test for force-directed layout application
+  - [~] 14.17 Write property test for force-directed layout application
     - **Property 55: Force-Directed Layout Application**
     - **Validates: Requirements 8.10**
 
 
-  - [ ] 14.18 Implement manual node positioning with persistence
+  - [~] 14.18 Implement manual node positioning with persistence
     - Allow drag-and-drop node repositioning
     - Save positions to configuration file
     - Load saved positions on startup
     - _Requirements: 8.11_
 
-  - [ ]* 14.19 Write property test for manual node positioning persistence
+  - [~] 14.19 Write property test for manual node positioning persistence
     - **Property 56: Manual Node Positioning Persistence**
     - **Validates: Requirements 8.11**
 
-  - [ ] 14.20 Implement view position preservation on refresh
+  - [~] 14.20 Implement view position preservation on refresh
     - Maintain zoom level and pan offset during topology updates
     - Refresh display without resetting view
     - _Requirements: 8.12_
 
-  - [ ]* 14.21 Write property test for view position preservation on refresh
+  - [~] 14.21 Write property test for view position preservation on refresh
     - **Property 57: View Position Preservation on Refresh**
     - **Validates: Requirements 8.12**
 
-  - [ ] 14.22 Integrate visualizer with SharedDataStore
+  - [~] 14.22 Integrate visualizer with SharedDataStore
     - Read topology data from SharedDataStore
     - Subscribe to topology updates for real-time refresh
     - _Requirements: 8.1-8.12_
 
 - [ ] 15. Implement comprehensive error handling
-  - [ ] 15.1 Implement network operation error handling
+  - [~] 15.1 Implement network operation error handling
     - Handle timeouts with logging and continuation
     - Handle connection refusals with logging
     - Handle network unreachable errors
     - _Requirements: 9.1, 9.2_
 
-  - [ ]* 15.2 Write property test for network operation error resilience
+  - [~] 15.2 Write property test for network operation error resilience
     - **Property 58: Network Operation Error Resilience**
     - **Validates: Requirements 9.1, 9.2**
 
-  - [ ] 15.3 Implement protocol handler failure resilience
+  - [~] 15.3 Implement protocol handler failure resilience
     - Log authentication failures
     - Attempt alternative protocols on failure
     - Continue with other devices
     - _Requirements: 9.3_
 
-  - [ ]* 15.4 Write property test for protocol handler failure resilience
+  - [~] 15.4 Write property test for protocol handler failure resilience
     - **Property 59: Protocol Handler Failure Resilience**
     - **Validates: Requirements 9.3**
 
-  - [ ] 15.5 Implement protocol-specific error handling
+  - [~] 15.5 Implement protocol-specific error handling
     - SNMP: Log error codes, continue with next query
     - SSH: Handle command not found, try alternatives
     - WMI: Handle class not found, access denied
     - _Requirements: 9.4, 9.5, 9.6_
 
-  - [ ]* 15.6 Write property test for protocol-specific error handling
+  - [~] 15.6 Write property test for protocol-specific error handling
     - **Property 60: Protocol-Specific Error Handling**
     - **Validates: Requirements 9.4, 9.5, 9.6**
 
-  - [ ] 15.7 Implement configuration error fallback
+  - [~] 15.7 Implement configuration error fallback
     - Use default values for missing/invalid config
     - Log warnings for configuration issues
     - _Requirements: 9.7_
 
-  - [ ]* 15.8 Write property test for configuration error fallback
+  - [~] 15.8 Write property test for configuration error fallback
     - **Property 61: Configuration Error Fallback**
     - **Validates: Requirements 9.7**
 
-  - [ ] 15.9 Implement invalid target rejection
+  - [~] 15.9 Implement invalid target rejection
     - Validate scan target format before scanning
     - Return error for invalid targets
     - Refuse to start scanning on invalid input
     - _Requirements: 9.8_
 
-  - [ ]* 15.10 Write property test for invalid target rejection
+  - [~] 15.10 Write property test for invalid target rejection
     - **Property 62: Invalid Target Rejection**
     - **Validates: Requirements 9.8**
 
-  - [ ] 15.11 Implement resource monitoring and response
+  - [~] 15.11 Implement resource monitoring and response
     - Monitor memory usage every 10 seconds
     - Pause scanning if memory > 80%
     - Monitor disk space every 60 seconds
     - Rotate logs if disk space < 100MB
     - _Requirements: 9.9, 9.10_
 
-  - [ ]* 15.12 Write property test for resource monitoring and response
+  - [~] 15.12 Write property test for resource monitoring and response
     - **Property 63: Resource Monitoring and Response**
     - **Validates: Requirements 9.9, 9.10**
 
 
-  - [ ] 15.13 Implement background task exception recovery
+  - [~] 15.13 Implement background task exception recovery
     - Catch unhandled exceptions in tokio tasks
     - Log stack traces with context
     - Restart tasks with exponential backoff
     - _Requirements: 9.11_
 
-  - [ ]* 15.14 Write property test for background task exception recovery
+  - [~] 15.14 Write property test for background task exception recovery
     - **Property 64: Background Task Exception Recovery**
     - **Validates: Requirements 9.11**
 
-  - [ ] 15.15 Implement component failure isolation
+  - [~] 15.15 Implement component failure isolation
     - Ensure scanner component failures don't stop other components
     - Use separate tokio tasks for each component
     - _Requirements: 9.12_
 
-  - [ ]* 15.16 Write property test for component failure isolation
+  - [~] 15.16 Write property test for component failure isolation
     - **Property 65: Component Failure Isolation**
     - **Validates: Requirements 9.12**
 
 - [ ] 16. Implement Network Mapper Orchestrator
-  - [ ] 16.1 Create NetworkMapperOrchestrator
+  - [~] 16.1 Create NetworkMapperOrchestrator
     - Coordinate all components (Scanner, Fingerprinter, Protocol Handlers, etc.)
     - Manage scan lifecycle with configurable intervals
     - Trigger periodic updates for topology, metrics, risks
     - _Requirements: All requirements_
 
-  - [ ] 16.2 Implement scan workflow orchestration
+  - [~] 16.2 Implement scan workflow orchestration
     - Trigger Scanner with target networks
     - Pass scan results to Fingerprinter
     - Trigger Protocol Handlers based on device capabilities
@@ -766,136 +766,136 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Run Risk Detector on updated topology
     - _Requirements: 1.1-10.12_
 
-  - [ ] 16.3 Implement periodic background tasks
+  - [~] 16.3 Implement periodic background tasks
     - Schedule scanning at configured intervals
     - Schedule metrics collection
     - Schedule risk detection
     - Schedule metrics pruning
     - _Requirements: 5.11, 9.9, 9.10_
 
-  - [ ] 16.4 Implement authentication and authorization
+  - [~] 16.4 Implement authentication and authorization
     - Validate user credentials before scan operations
     - Load credentials from configuration
     - _Requirements: 10.11_
 
-  - [ ]* 16.5 Write property test for authentication enforcement
+  - [~] 16.5 Write property test for authentication enforcement
     - **Property 71: Authentication Enforcement**
     - **Validates: Requirements 10.11**
 
-  - [ ] 16.6 Implement audit logging
+  - [~] 16.6 Implement audit logging
     - Log all scan activities with timestamps, targets, results
     - Use structured logging format
     - _Requirements: 10.12_
 
-  - [ ]* 16.7 Write property test for audit logging completeness
+  - [~] 16.7 Write property test for audit logging completeness
     - **Property 72: Audit Logging Completeness**
     - **Validates: Requirements 10.12**
 
-  - [ ] 16.8 Wire orchestrator with GUI
+  - [~] 16.8 Wire orchestrator with GUI
     - Connect orchestrator to NetworkMapperApp
     - Provide scan trigger from GUI buttons
     - Provide report generation trigger
     - _Requirements: 7.1-7.12, 8.1-8.12_
 
 - [ ] 17. Update configuration management
-  - [ ] 17.1 Extend AppConfig with all configuration options
+  - [~] 17.1 Extend AppConfig with all configuration options
     - Add RateLimitConfig with per-scan-type limits
     - Add CredentialsConfig with SNMP, WMI, SSH credentials
     - Add FeatureFlags for enabling/disabling protocols
     - Add RetentionConfig for metrics and logs
     - _Requirements: 3.1-3.12, 5.11, 10.1-10.12_
 
-  - [ ] 17.2 Update config.toml with example configuration
+  - [~] 17.2 Update config.toml with example configuration
     - Provide example values for all configuration options
     - Document each configuration parameter
     - _Requirements: All requirements_
 
-  - [ ] 17.3 Implement configuration validation
+  - [~] 17.3 Implement configuration validation
     - Validate rate limits, credentials, network ranges
     - Use defaults for invalid values with warnings
     - _Requirements: 9.7_
 
 
 - [ ] 18. Add required dependencies to Cargo.toml
-  - [ ] 18.1 Add networking and protocol dependencies
+  - [~] 18.1 Add networking and protocol dependencies
     - Add pnet or socket2 for raw socket access (ARP, ICMP)
     - Add snmp crate for SNMP protocol
     - Add ssh2 or russh for SSH protocol
     - Add wmi crate for Windows Management Instrumentation
     - _Requirements: 1.1-1.12, 3.1-3.12_
 
-  - [ ] 18.2 Add data structure and utility dependencies
+  - [~] 18.2 Add data structure and utility dependencies
     - Add ipnetwork for IP network range handling
     - Add mac_address or similar for MAC address handling
     - Add uuid for scan record IDs
     - Add thiserror for error type definitions
     - _Requirements: All requirements_
 
-  - [ ] 18.3 Add testing dependencies
+  - [~] 18.3 Add testing dependencies
     - Add proptest for property-based testing
     - Add mockall for mocking in unit tests
     - Add criterion for benchmarking
     - _Requirements: Testing strategy_
 
-  - [ ] 18.4 Add serialization and reporting dependencies
+  - [~] 18.4 Add serialization and reporting dependencies
     - Add csv crate for CSV report generation
     - Add tera or askama for HTML template rendering
     - _Requirements: 7.9, 7.10_
 
-- [ ] 19. Checkpoint - Verify complete system integration
+- [~] 19. Checkpoint - Verify complete system integration
   - Ensure all components are wired together, ask the user if questions arise.
 
 - [ ] 20. Integration testing and validation
-  - [ ] 20.1 Create integration test for end-to-end scan workflow
+  - [~] 20.1 Create integration test for end-to-end scan workflow
     - Test complete scan from target input to report generation
     - Use mock network devices
     - Verify all components execute correctly
     - _Requirements: All requirements_
 
-  - [ ] 20.2 Create integration test for multi-protocol discovery
+  - [~] 20.2 Create integration test for multi-protocol discovery
     - Test device with SNMP, WMI, and SSH capabilities
     - Verify all protocols are queried
     - Verify data is correctly aggregated
     - _Requirements: 3.1-3.12_
 
-  - [ ] 20.3 Create integration test for topology construction
+  - [~] 20.3 Create integration test for topology construction
     - Test topology building from multi-device network
     - Verify Layer 2 and Layer 3 connections
     - Verify VLAN grouping and loop detection
     - _Requirements: 4.1-4.12_
 
-  - [ ] 20.4 Create integration test for report generation
+  - [~] 20.4 Create integration test for report generation
     - Generate all report formats (JSON, CSV, HTML)
     - Verify report completeness and correctness
     - Verify performance requirements (<5s for 1000 devices)
     - _Requirements: 7.1-7.12_
 
-  - [ ] 20.5 Create integration test for GUI interaction
+  - [~] 20.5 Create integration test for GUI interaction
     - Simulate user interactions with topology visualizer
     - Verify node selection, zoom, pan
     - Verify detail panels display correctly
     - _Requirements: 8.1-8.12_
 
 - [ ] 21. Performance optimization and benchmarking
-  - [ ] 21.1 Benchmark scanning performance
+  - [~] 21.1 Benchmark scanning performance
     - Measure devices scanned per second
     - Optimize rate limiting implementation
     - Profile and optimize hot paths
     - _Requirements: 1.1-1.12, 10.1-10.7_
 
-  - [ ] 21.2 Benchmark report generation performance
+  - [~] 21.2 Benchmark report generation performance
     - Verify <5 second generation for 1000 devices
     - Optimize data aggregation and formatting
     - Use parallel processing where applicable
     - _Requirements: 7.11_
 
-  - [ ] 21.3 Benchmark GUI rendering performance
+  - [~] 21.3 Benchmark GUI rendering performance
     - Measure frame rate for large topologies (100+ devices)
     - Optimize force-directed layout algorithm
     - Implement level-of-detail rendering if needed
     - _Requirements: 8.1-8.12_
 
-  - [ ] 21.4 Profile memory usage
+  - [~] 21.4 Profile memory usage
     - Monitor memory usage during large network scans
     - Optimize data structures for memory efficiency
     - Verify resource monitoring triggers correctly
@@ -903,32 +903,32 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
 
 
 - [ ] 22. Documentation and final polish
-  - [ ] 22.1 Update README.md with usage instructions
+  - [~] 22.1 Update README.md with usage instructions
     - Document installation and setup
     - Document configuration options
     - Provide usage examples
     - Document required privileges (raw sockets)
     - _Requirements: All requirements_
 
-  - [ ] 22.2 Add inline documentation to all public APIs
+  - [~] 22.2 Add inline documentation to all public APIs
     - Document all public structs, traits, and functions
     - Add usage examples in doc comments
     - Generate rustdoc documentation
     - _Requirements: All requirements_
 
-  - [ ] 22.3 Create user guide for GUI
+  - [~] 22.3 Create user guide for GUI
     - Document GUI features and controls
     - Explain topology visualization
     - Document report generation
     - _Requirements: 7.1-7.12, 8.1-8.12_
 
-  - [ ] 22.4 Fix any remaining compiler warnings
+  - [~] 22.4 Fix any remaining compiler warnings
     - Remove unused imports and variables
     - Fix DeviceType serialization issues
     - Ensure clean compilation
     - _Requirements: All requirements_
 
-- [ ] 23. Final checkpoint - Complete system validation
+- [~] 23. Final checkpoint - Complete system validation
   - Ensure all tests pass, all features work correctly, ask the user if questions arise.
 
 ## Notes

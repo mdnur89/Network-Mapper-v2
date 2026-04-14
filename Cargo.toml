@@ -3,6 +3,10 @@ name = "rust_network_mapper"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "rust_network_mapper"
+path = "src/lib.rs"
+
 [dependencies]
 tokio = { version = "1.28", features = ["full"] }
 async-trait = "0.1.68"
@@ -13,3 +17,7 @@ serde_json = "1.0"
 config = { version = "0.13", features = ["yaml"] }
 rand = { version = "0.8", features = ["std_rng"] }
 eframe = { version = "0.19.0", features = ["default_fonts", "glow"] }
+thiserror = "1.0"
+
+[dev-dependencies]
+proptest = "1.4"

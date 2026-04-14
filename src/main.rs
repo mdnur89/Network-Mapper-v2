@@ -1,56 +1,23 @@
+mod data_store;
+mod errors;
+mod models;
+mod rate_limiter;
+
+use async_trait::async_trait;
+use config::{Config, ConfigError, File};
+use eframe::egui;
+use log::{info, warn};
+use rand::rngs::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::IpAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
-use tokio::time::interval;
-use async_trait::async_trait;
-use log::{info, warn};
-use serde::{Deserialize, Serialize};
-use config::{Config, ConfigError, File};
-use rand::Rng;
-use rand::rngs::StdRng;
-use rand::SeedableRng;
-use eframe::{egui};
 
-#[allow(dead_code)]
-enum DeviceType {
-    Router,
-    Switch,
-    Firewall,
-    Server,
-    Printer,
-    Endpoint,
-    Unknown,
-}
-
-// Remove or comment out unused enum
-// #[allow(dead_code)]
-// enum Protocol {
-//     SNMP,
-//     WMI,
-//     SSH,
-// }
-
-// Device information
-#[derive(Serialize, Clone)]
-struct Device {
-    ip: IpAddr,
-    mac: String,
-    device_type: DeviceType,
-    hostname: String,
-    os: String,
-    open_ports: Vec<u16>,
-    connections: Vec<IpAddr>,
-    performance_metrics: HashMap<String, f64>,
-}
-
-// Network topology
-#[derive(Serialize)]
-struct NetworkTopology {
-    devices: HashMap<IpAddr, Device>,
-    layer2_connections: HashMap<String, Vec<String>>, // MAC to MAC connections
-    layer3_connections: HashMap<IpAddr, Vec<IpAddr>>, // IP to IP connections
-}
+use data_store::SharedDataStore;
+use models::{Device, DeviceType, MacAddr, OsFamily};
 
 // Scanner trait
 #[async_trait]
@@ -65,22 +32,27 @@ struct ActiveScanner;
 impl Scanner for ActiveScanner {
     async fn scan(&self, target: &IpAddr) -> Option<Device> {
         info!("Performing active scan on {}", target);
-        // Active scanning logic 
+        // Active scanning logic
         // This is placeholder implementation for now
         Some(Device {
             ip: *target,
-            mac: "00:00:00:00:00:00".to_string(),
+            mac: MacAddr::new([0, 0, 0, 0, 0, 0]),
             device_type: DeviceType::Unknown,
             hostname: "unknown".to_string(),
-            os: "unknown".to_string(),
+            os_family: OsFamily::Unknown,
+            os_version: None,
             open_ports: vec![],
-            connections: vec![],
+            interfaces: vec![],
+            first_seen: std::time::SystemTime::now(),
+            last_seen: std::time::SystemTime::now(),
+            confidence: 0,
             performance_metrics: HashMap::new(),
         })
     }
 }
 
 // Passive scanner
+#[allow(dead_code)]
 struct PassiveScanner;
 
 #[async_trait]
@@ -91,41 +63,30 @@ impl Scanner for PassiveScanner {
         // This is a placeholder implementation
         Some(Device {
             ip: *target,
-            mac: "00:00:00:00:00:00".to_string(),
+            mac: MacAddr::new([0, 0, 0, 0, 0, 0]),
             device_type: DeviceType::Unknown,
             hostname: "unknown".to_string(),
-            os: "unknown".to_string(),
+            os_family: OsFamily::Unknown,
+            os_version: None,
             open_ports: vec![],
-            connections: vec![],
+            interfaces: vec![],
+            first_seen: std::time::SystemTime::now(),
+            last_seen: std::time::SystemTime::now(),
+            confidence: 0,
             performance_metrics: HashMap::new(),
         })
     }
 }
 
 struct NetworkMapper {
-    topology: Arc<Mutex<NetworkTopology>>,
+    data_store: SharedDataStore,
     active_scanner: ActiveScanner,
-    // Remove unused fields
-    // passive_scanner: PassiveScanner,
-    // scan_interval: Duration,
 }
 
 impl NetworkMapper {
-    // Remove unused methods or implement their usage
-    // async fn start_mapping(&self, target_network: &str) { ... }
-    // async fn generate_report(&self) { ... }
-    // fn filter_devices(&self, filter: impl Fn(&Device) -> bool) -> Vec<Device> { ... }
-    // fn get_performance_metrics(&self, device: &IpAddr) -> Option<HashMap<String, f64>> { ... }
-    // fn visualize_topology(&self) -> String { ... }
-
-    // Keep implemented methods
-    fn new(scan_interval: Duration) -> Self {
+    fn new(_scan_interval: Duration) -> Self {
         NetworkMapper {
-            topology: Arc::new(Mutex::new(NetworkTopology {
-                devices: HashMap::new(),
-                layer2_connections: HashMap::new(),
-                layer3_connections: HashMap::new(),
-            })),
+            data_store: SharedDataStore::new(),
             active_scanner: ActiveScanner,
         }
     }
@@ -134,51 +95,40 @@ impl NetworkMapper {
         info!("Scanning network: {}", target_network);
         // Create a thread-safe random number generator
         let mut rng = StdRng::from_entropy();
-        let random_ip: IpAddr = format!("{}.{}.{}.{}",
-            rng.gen_range(0..256), rng.gen_range(0..256),
-            rng.gen_range(0..256), rng.gen_range(0..256)).parse().unwrap();
-        
+        let random_ip: IpAddr = format!(
+            "{}.{}.{}.{}",
+            rng.gen_range(0..256),
+            rng.gen_range(0..256),
+            rng.gen_range(0..256),
+            rng.gen_range(0..256)
+        )
+        .parse()
+        .unwrap();
+
         if let Some(device) = self.active_scanner.scan(&random_ip).await {
-            let mut topology = self.topology.lock().unwrap();
-            topology.devices.insert(random_ip, device);
+            self.data_store.update_device(device);
         }
     }
 
     async fn update_topology(&self) {
         info!("Updating network topology");
-        // Update network topology based on scan results
-        let topology = self.topology.lock().unwrap();
-        // Implement topology update logic here
-        // This is a placeholder implementation
-        info!("Network topology updated. Current device count: {}", topology.devices.len());
+        let devices = self.data_store.get_all_devices();
+        info!(
+            "Network topology updated. Current device count: {}",
+            devices.len()
+        );
     }
 
     async fn detect_security_risks(&self) {
         info!("Detecting security risks");
-        let topology = self.topology.lock().unwrap();
-        for (ip, device) in &topology.devices {
-            // Implement security risk detection logic here
-            // This is a placeholder implementation
+        let devices = self.data_store.get_all_devices();
+        for device in &devices {
             if device.open_ports.contains(&22) {
-                warn!("Potential security risk: SSH port open on {}", ip);
+                warn!("Potential security risk: SSH port open on {}", device.ip);
             }
         }
     }
 }
-
-// Remove or comment out unused protocol handlers
-// mod protocol_handlers {
-//     use super::*;
-//
-//     #[allow(dead_code)]
-//     pub struct SNMPHandler;
-//     #[allow(dead_code)]
-//     pub struct WMIHandler;
-//     #[allow(dead_code)]
-//     pub struct SSHHandler;
-//
-//     // ... (remove or comment out unused implementations)
-// }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AppConfig {
@@ -189,8 +139,7 @@ struct AppConfig {
 
 impl AppConfig {
     fn new() -> Result<Self, ConfigError> {
-        let builder = Config::builder()
-            .add_source(File::with_name("config"));
+        let builder = Config::builder().add_source(File::with_name("config"));
         builder.build()?.try_deserialize()
     }
 }
@@ -217,21 +166,24 @@ impl eframe::App for NetworkMapperApp {
             ui.separator();
 
             egui::ScrollArea::vertical().show(ui, |ui| {
-                let topology = self.mapper.topology.lock().unwrap();
-                for (ip, device) in &topology.devices {
-                    ui.selectable_value(&mut self.selected_device, Some(*ip), format!("{}: {}", ip, device.hostname));
+                let devices = self.mapper.data_store.get_all_devices();
+                for device in &devices {
+                    ui.selectable_value(
+                        &mut self.selected_device,
+                        Some(device.ip),
+                        format!("{}: {}", device.ip, device.hostname),
+                    );
                 }
             });
 
             if let Some(selected_ip) = self.selected_device {
                 ui.separator();
                 ui.heading("Device Details");
-                let topology = self.mapper.topology.lock().unwrap();
-                if let Some(device) = topology.devices.get(&selected_ip) {
+                if let Some(device) = self.mapper.data_store.get_device(&selected_ip) {
                     ui.label(format!("IP: {}", device.ip));
                     ui.label(format!("MAC: {}", device.mac));
                     ui.label(format!("Hostname: {}", device.hostname));
-                    ui.label(format!("OS: {}", device.os));
+                    ui.label(format!("OS: {:?}", device.os_family));
                     ui.label(format!("Open Ports: {:?}", device.open_ports));
                 }
             }
@@ -245,18 +197,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = AppConfig::new()?;
 
     // Initialize logging
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or(&config.log_level)).init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or(&config.log_level))
+        .init();
 
     info!("Starting network mapper");
 
-    let mapper = Arc::new(NetworkMapper::new(Duration::from_secs(config.scan_interval)));
+    let mapper = Arc::new(NetworkMapper::new(Duration::from_secs(
+        config.scan_interval,
+    )));
 
     let mapper_clone = Arc::clone(&mapper);
+    let target_networks = config.target_networks.clone();
+    let scan_interval = config.scan_interval;
+
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(config.scan_interval));
+        let mut interval = tokio::time::interval(Duration::from_secs(scan_interval));
         loop {
             interval.tick().await;
-            for network in &config.target_networks {
+            for network in &target_networks {
                 mapper_clone.perform_scan(network).await;
             }
             mapper_clone.update_topology().await;
@@ -268,7 +226,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     eframe::run_native(
         "Network Mapper",
         options,
-        Box::new(|cc| Box::new(NetworkMapperApp::new(cc, mapper)))
+        Box::new(|cc| Box::new(NetworkMapperApp::new(cc, mapper))),
     );
 
     Ok(())
