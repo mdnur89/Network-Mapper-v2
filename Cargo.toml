@@ -18,6 +18,8 @@ config = { version = "0.13", features = ["yaml"] }
 rand = { version = "0.8", features = ["std_rng"] }
 eframe = { version = "0.19.0", features = ["default_fonts", "glow"] }
 thiserror = "1.0"
+pnet = "0.34"
+ipnetwork = "0.20"
 
 [dev-dependencies]
 proptest = "1.0"

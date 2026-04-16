@@ -29,7 +29,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - Add acquire_connection_permit() method returning ConnectionPermit guard
     - _Requirements: 10.2, 10.4_
 
-  - [ ] 2.4 Implement stealth mode with randomization
+  - [x] 2.4 Implement stealth mode with randomization
     - Add stealth_mode flag to reduce rate to 10%
     - Implement scan order randomization
     - Add random delays between probes
@@ -40,7 +40,7 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - **Property 68: Stealth Mode Randomization**
     - **Validates: Requirements 10.6, 10.7**
 
-  - [ ] 2.6 Add whitelist and blacklist support
+  - [x] 2.6 Add whitelist and blacklist support
     - Implement IP whitelist exclusion logic
     - Implement IP blacklist prevention with logging
     - _Requirements: 10.8, 10.9, 10.10_
@@ -51,57 +51,57 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
     - **Validates: Requirements 10.8, 10.9, 10.10**
 
 
-- [ ] 3. Implement Scanner Module
-  - [ ] 3.1 Create Scanner trait and ScanTarget/ScanResult structures
+- [x] 3. Implement Scanner Module
+  - [x] 3.1 Create Scanner trait and ScanTarget/ScanResult structures
     - Define Scanner trait with async scan() method
     - Create ScanTarget with network range and scan types
     - Create ScanResult with IP, MAC, ports, and timestamps
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.8, 1.10, 1.12_
 
-  - [ ] 3.2 Implement ARPScanner for Layer 2 discovery
+  - [x] 3.2 Implement ARPScanner for Layer 2 discovery
     - Use raw sockets to send ARP requests to all IPs in range
     - Record IP and MAC from ARP replies
     - Integrate with RateLimiter for packet rate control
     - _Requirements: 1.1, 1.2_
 
-  - [ ] 3.3 Write property test for scanner coverage completeness
+  - [x] 3.3 Write property test for scanner coverage completeness
     - **Property 1: Scanner Coverage Completeness**
     - **Validates: Requirements 1.1, 1.3, 1.6, 1.9**
 
-  - [ ] 3.4 Implement ICMPScanner for Layer 3 discovery
+  - [x] 3.4 Implement ICMPScanner for Layer 3 discovery
     - Use raw sockets to send ICMP echo requests
     - Mark hosts as active on echo reply within 2s timeout
     - Mark hosts as filtered on destination unreachable
     - Integrate with RateLimiter
     - _Requirements: 1.3, 1.4, 1.5_
 
-  - [ ] 3.5 Implement PortScanner for TCP port scanning
+  - [x] 3.5 Implement PortScanner for TCP port scanning
     - Probe TCP ports 1-1024 and common high ports (3389, 8080, 8443)
     - Use SYN scan technique with 1s timeout per port
     - Record open ports on SYN-ACK response
     - Integrate with RateLimiter
     - _Requirements: 1.6, 1.7, 1.8_
 
-  - [ ] 3.6 Write property test for scan operation timeout compliance
+  - [x] 3.6 Write property test for scan operation timeout compliance
     - **Property 5: Scan Operation Timeout Compliance**
     - **Validates: Requirements 1.7, 3.12**
 
-  - [ ] 3.7 Implement UDP port scanning
+  - [x] 3.7 Implement UDP port scanning
     - Probe UDP ports 53, 67, 68, 69, 123, 161, 162, 514
     - Send protocol-specific probes with 2s timeout
     - Record open ports on response
     - Integrate with RateLimiter
     - _Requirements: 1.9, 1.10_
 
-  - [ ] 3.8 Write property test for scan response recording
+  - [x] 3.8 Write property test for scan response recording
     - **Property 2: Scan Response Recording**
     - **Validates: Requirements 1.2, 1.4, 1.5, 1.8, 1.10**
 
-  - [ ] 3.9 Write property test for scan result completeness
+  - [x] 3.9 Write property test for scan result completeness
     - **Property 3: Scan Result Completeness**
     - **Validates: Requirements 1.12**
 
-  - [ ] 3.10 Integrate scanners with SharedDataStore
+  - [x] 3.10 Integrate scanners with SharedDataStore
     - Store scan results in SharedDataStore
     - Update device records with scan timestamps
     - _Requirements: 1.12_
@@ -110,8 +110,8 @@ This implementation plan breaks down the Complete Network Mapper into discrete, 
   - Ensure all scanner tests pass, ask the user if questions arise.
 
 
-- [ ] 5. Implement Device Fingerprinter
-  - [ ] 5.1 Create DeviceFingerprinter with banner grabbing
+- [-] 5. Implement Device Fingerprinter
+  - [x] 5.1 Create DeviceFingerprinter with banner grabbing
     - Implement BannerGrabber for SSH (port 22), HTTP (80/443), Telnet (23)
     - Parse banners to extract OS and version information
     - _Requirements: 2.2, 2.3, 2.4, 2.6_

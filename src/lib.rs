@@ -1,4 +1,11 @@
 pub mod data_store;
 pub mod errors;
+pub mod fingerprinter;
 pub mod models;
 pub mod rate_limiter;
+pub mod scanner;
+pub mod scanner_completeness;
+pub mod scanner_integration;
+pub mod scanner_port;
+pub mod scanner_properties;
+pub mod scanner_udp;

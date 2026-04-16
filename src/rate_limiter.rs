@@ -1,6 +1,9 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use std::net::IpAddr;
+use std::collections::HashSet;
 use tokio::sync::{Mutex, Semaphore};
+use rand::{Rng, SeedableRng};
 
 /// Scan type for rate limiting
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -21,6 +24,8 @@ pub struct RateLimitConfig {
     pub tcp_rate: u32,
     pub udp_rate: u32,
     pub stealth_mode: bool,
+    pub whitelist: Vec<IpAddr>,
+    pub blacklist: Vec<IpAddr>,
 }
 
 impl Default for RateLimitConfig {
@@ -33,6 +38,8 @@ impl Default for RateLimitConfig {
             tcp_rate: 100,
             udp_rate: 100,
             stealth_mode: false,
+            whitelist: Vec::new(),
+            blacklist: Vec::new(),
         }
     }
 }
@@ -94,25 +101,48 @@ pub struct RateLimiter {
     tcp_limiter: TokenBucket,
     udp_limiter: TokenBucket,
     connection_limiter: Arc<Semaphore>,
+    rng: Arc<Mutex<rand::rngs::StdRng>>,
+    whitelist: HashSet<IpAddr>,
+    blacklist: HashSet<IpAddr>,
 }
 
 impl RateLimiter {
     /// Create a new rate limiter with the given configuration
     pub fn new(config: RateLimitConfig) -> Self {
+        // Apply stealth mode rate reduction if enabled
+        let (arp_rate, icmp_rate, tcp_rate, udp_rate) = if config.stealth_mode {
+            (
+                (config.arp_rate as f64 * 0.1).max(1.0) as u32,
+                (config.icmp_rate as f64 * 0.1).max(1.0) as u32,
+                (config.tcp_rate as f64 * 0.1).max(1.0) as u32,
+                (config.udp_rate as f64 * 0.1).max(1.0) as u32,
+            )
+        } else {
+            (config.arp_rate, config.icmp_rate, config.tcp_rate, config.udp_rate)
+        };
+
+        // Convert whitelist and blacklist to HashSets for efficient lookup
+        let whitelist: HashSet<IpAddr> = config.whitelist.iter().copied().collect();
+        let blacklist: HashSet<IpAddr> = config.blacklist.iter().copied().collect();
+
         Self {
-            arp_limiter: TokenBucket::new(config.arp_rate),
-            icmp_limiter: TokenBucket::new(config.icmp_rate),
-            tcp_limiter: TokenBucket::new(config.tcp_rate),
-            udp_limiter: TokenBucket::new(config.udp_rate),
+            arp_limiter: TokenBucket::new(arp_rate),
+            icmp_limiter: TokenBucket::new(icmp_rate),
+            tcp_limiter: TokenBucket::new(tcp_rate),
+            udp_limiter: TokenBucket::new(udp_rate),
             connection_limiter: Arc::new(Semaphore::new(
                 config.max_concurrent_connections as usize,
             )),
+            rng: Arc::new(Mutex::new(rand::rngs::StdRng::from_entropy())),
+            whitelist,
+            blacklist,
             config,
         }
     }
 
     /// Acquire a permit to send a packet of the specified scan type
     /// This method will wait asynchronously until a permit is available
+    /// In stealth mode, adds random delays between probes
     pub async fn acquire_packet_permit(&self, scan_type: ScanType) {
         let limiter = match scan_type {
             ScanType::ARP => &self.arp_limiter,
@@ -122,6 +152,25 @@ impl RateLimiter {
         };
 
         limiter.acquire().await;
+
+        // Add random delay in stealth mode
+        if self.config.stealth_mode {
+            let delay_ms = {
+                let mut rng = self.rng.lock().await;
+                rng.gen_range(50..=500) // Random delay between 50-500ms
+            };
+            tokio::time::sleep(Duration::from_millis(delay_ms)).await;
+        }
+    }
+
+    /// Randomize the order of a list of items (for stealth mode scan order randomization)
+    /// This is a helper method that can be used by scanners to randomize target order
+    pub async fn randomize_order<T>(&self, items: &mut [T]) {
+        if self.config.stealth_mode {
+            use rand::seq::SliceRandom;
+            let mut rng = self.rng.lock().await;
+            items.shuffle(&mut *rng);
+        }
     }
 
     /// Acquire a permit to make a connection
@@ -139,6 +188,35 @@ impl RateLimiter {
     /// Get the current configuration
     pub fn config(&self) -> &RateLimitConfig {
         &self.config
+    }
+
+    /// Check if stealth mode is enabled
+    pub fn is_stealth_mode(&self) -> bool {
+        self.config.stealth_mode
+    }
+
+    /// Check if an IP address is whitelisted (should be excluded from scanning)
+    /// Returns true if the IP is in the whitelist
+    pub fn is_whitelisted(&self, ip: &IpAddr) -> bool {
+        self.whitelist.contains(ip)
+    }
+
+    /// Check if an IP address is blacklisted (should not be scanned)
+    /// Returns true if the IP is in the blacklist
+    pub fn is_blacklisted(&self, ip: &IpAddr) -> bool {
+        self.blacklist.contains(ip)
+    }
+
+    /// Check if an IP address should be scanned
+    /// Returns Ok(()) if the IP can be scanned, Err with reason if not
+    pub fn should_scan(&self, ip: &IpAddr) -> Result<(), String> {
+        if self.is_whitelisted(ip) {
+            return Err(format!("IP {} is whitelisted and excluded from scanning", ip));
+        }
+        if self.is_blacklisted(ip) {
+            return Err(format!("IP {} is blacklisted and cannot be scanned", ip));
+        }
+        Ok(())
     }
 }
 
@@ -169,6 +247,7 @@ mod tests {
 
         assert_eq!(limiter.config().max_packets_per_second, 100);
         assert_eq!(limiter.config().max_concurrent_connections, 50);
+        assert!(!limiter.is_stealth_mode());
     }
 
     #[tokio::test]
@@ -218,6 +297,197 @@ mod tests {
         limiter.acquire_packet_permit(ScanType::ICMP).await;
         limiter.acquire_packet_permit(ScanType::TCP).await;
         limiter.acquire_packet_permit(ScanType::UDP).await;
+    }
+
+    #[tokio::test]
+    async fn test_stealth_mode_enabled() {
+        let config = RateLimitConfig {
+            arp_rate: 100,
+            icmp_rate: 100,
+            tcp_rate: 100,
+            udp_rate: 100,
+            stealth_mode: true,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        assert!(limiter.is_stealth_mode());
+        assert!(limiter.config().stealth_mode);
+    }
+
+    #[tokio::test]
+    async fn test_stealth_mode_rate_reduction() {
+        let config = RateLimitConfig {
+            arp_rate: 100,
+            icmp_rate: 100,
+            tcp_rate: 100,
+            udp_rate: 100,
+            stealth_mode: true,
+            ..Default::default()
+        };
+        let limiter = Arc::new(RateLimiter::new(config));
+
+        // In stealth mode, rate should be reduced to 10%
+        // So for 100 pps, we should get ~10 pps
+        let start = Instant::now();
+        let num_packets = 20;
+
+        for _ in 0..num_packets {
+            limiter.acquire_packet_permit(ScanType::ARP).await;
+        }
+
+        let elapsed = start.elapsed();
+        let elapsed_secs = elapsed.as_secs_f64();
+
+        // With 10 pps rate, 20 packets should take at least 2 seconds
+        // But with random delays (50-500ms), it will take longer
+        // We just verify it takes significantly longer than normal mode
+        assert!(
+            elapsed_secs >= 1.5,
+            "Stealth mode should slow down scanning significantly, took {}s",
+            elapsed_secs
+        );
+    }
+
+    #[tokio::test]
+    async fn test_randomize_order() {
+        let config = RateLimitConfig {
+            stealth_mode: true,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        let mut items = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let original = items.clone();
+
+        limiter.randomize_order(&mut items).await;
+
+        // Items should be shuffled (very unlikely to be in same order)
+        // Note: There's a tiny chance this could fail randomly
+        assert_ne!(items, original, "Items should be randomized in stealth mode");
+    }
+
+    #[tokio::test]
+    async fn test_randomize_order_disabled_in_normal_mode() {
+        let config = RateLimitConfig {
+            stealth_mode: false,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        let mut items = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let original = items.clone();
+
+        limiter.randomize_order(&mut items).await;
+
+        // Items should NOT be shuffled in normal mode
+        assert_eq!(items, original, "Items should not be randomized in normal mode");
+    }
+
+    #[tokio::test]
+    async fn test_whitelist_exclusion() {
+        use std::net::Ipv4Addr;
+        
+        let whitelist = vec![
+            IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1)),
+            IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)),
+        ];
+        
+        let config = RateLimitConfig {
+            whitelist,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        // Whitelisted IPs should be detected
+        let whitelisted_ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
+        assert!(limiter.is_whitelisted(&whitelisted_ip));
+        assert!(limiter.should_scan(&whitelisted_ip).is_err());
+
+        // Non-whitelisted IPs should not be detected
+        let normal_ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100));
+        assert!(!limiter.is_whitelisted(&normal_ip));
+        assert!(limiter.should_scan(&normal_ip).is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_blacklist_prevention() {
+        use std::net::Ipv4Addr;
+        
+        let blacklist = vec![
+            IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8)),
+            IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)),
+        ];
+        
+        let config = RateLimitConfig {
+            blacklist,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        // Blacklisted IPs should be detected
+        let blacklisted_ip = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
+        assert!(limiter.is_blacklisted(&blacklisted_ip));
+        assert!(limiter.should_scan(&blacklisted_ip).is_err());
+
+        // Non-blacklisted IPs should not be detected
+        let normal_ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100));
+        assert!(!limiter.is_blacklisted(&normal_ip));
+        assert!(limiter.should_scan(&normal_ip).is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_whitelist_and_blacklist_together() {
+        use std::net::Ipv4Addr;
+        
+        let whitelist = vec![IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1))];
+        let blacklist = vec![IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8))];
+        
+        let config = RateLimitConfig {
+            whitelist,
+            blacklist,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        // Whitelisted IP should be excluded
+        let whitelisted_ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
+        assert!(limiter.should_scan(&whitelisted_ip).is_err());
+
+        // Blacklisted IP should be prevented
+        let blacklisted_ip = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
+        assert!(limiter.should_scan(&blacklisted_ip).is_err());
+
+        // Normal IP should be allowed
+        let normal_ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100));
+        assert!(limiter.should_scan(&normal_ip).is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_should_scan_error_messages() {
+        use std::net::Ipv4Addr;
+        
+        let whitelist = vec![IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1))];
+        let blacklist = vec![IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8))];
+        
+        let config = RateLimitConfig {
+            whitelist,
+            blacklist,
+            ..Default::default()
+        };
+        let limiter = RateLimiter::new(config);
+
+        // Check whitelist error message
+        let whitelisted_ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
+        let result = limiter.should_scan(&whitelisted_ip);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("whitelisted"));
+
+        // Check blacklist error message
+        let blacklisted_ip = IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8));
+        let result = limiter.should_scan(&blacklisted_ip);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("blacklisted"));
     }
 
     // Property-based tests
